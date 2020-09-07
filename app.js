@@ -1,21 +1,19 @@
 var express = require('express');
-//var bodyParser = require('body-parser');
 var bcrypt = require('bcrypt');
 var passport = require('passport');
 var flash = require('express-flash');
 var session = require('express-session');
 var methodOverride = require('method-override');
+var mongoose = require('mongoose');
+const LocalStrategy = require('passport-local');
+var passportLocalMongoose = require('passport-local-mongoose');
+const  {check, validationResult} = require('express-validator');
 
-var initializePassport = require('./passport-config');
-initializePassport(passport, 
-    email => users.find(user => user.email === email),
-    id => users.find(user => user.id === id)
-);
-//var urlencodeParser = bodyParser.urlencoded({extended: false});
+mongoose.connect('mongodb+srv://DefyGravity10:Batsy@cluster0.zmrms.gcp.mongodb.net/Storage_01?retryWrites=true&w=majority', { useNewUrlParser: true, useUnifiedTopology: true });
+
+var User = require('./models/user');
 
 var app = express();
-
-var users=[];
 
 app.set('view-engine','ejs');
 app.use(express.urlencoded({extended: false}));
@@ -27,11 +25,14 @@ app.use(session({
 }));
 app.use(passport.initialize());
 app.use(passport.session());
+passport.use(new LocalStrategy(User.authenticate()));
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
 app.use(methodOverride('_method'));
 
-
 app.get('/',checkAuthentication, function(req,res){
-    res.render('index.ejs',{ name: req.user.name });
+    var currentUser = req.user;
+    res.render('index.ejs',{ user: currentUser });
 });
 
 app.get('/login', checkNotAuthenticated, function(req,res){
@@ -48,16 +49,32 @@ app.post('/login', checkNotAuthenticated, passport.authenticate('local', {
     failureFlash: true
 }));
 
-app.post('/register', checkNotAuthenticated, async (req, res) => {
-      const hashedPassword = await bcrypt.hash(req.body.password, 10);
-      users.push({
-        id: Date.now().toString(),
-        name: req.body.name,
+app.post('/register', [
+    check('password').isLength({min: 5}),
+    check('password').isAlphanumeric()
+], async (req, res) => {
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+      var newUser = new User({
+        username: req.body.username,
         email: req.body.email,
-        password: hashedPassword
+        userType: req.body.type
       });
-      res.redirect('/login');
-      console.log(users);
+      User.register(newUser, req.body.password, function(err, user){
+        if(err)
+        {
+            console.log(err);
+            res.redirect('/register');
+        }
+        passport.authenticate('local')(req, res, function(){
+            user.save();
+            res.redirect('/login');
+        });
+      });
 });
 
 app.delete('/logout', function(req, res)
