@@ -16,6 +16,15 @@ var UserSchema = new mongoose.Schema({
     userType: {
         type: String,
         required: true
+    },
+    cart: {
+        type: Array
+    },
+    Recent_Purchase: {
+        type: Array
+    },
+    Products: {
+        type: Array
     }
 });
 

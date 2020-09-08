@@ -12,8 +12,11 @@ const  {check, validationResult} = require('express-validator');
 mongoose.connect('mongodb+srv://DefyGravity10:Batsy@cluster0.zmrms.gcp.mongodb.net/Storage_01?retryWrites=true&w=majority', { useNewUrlParser: true, useUnifiedTopology: true });
 
 var User = require('./models/user');
+var item = require('./models/items');
 
 var app = express();
+var currentUser;
+
 
 app.set('view-engine','ejs');
 app.use(express.urlencoded({extended: false}));
@@ -31,7 +34,7 @@ passport.deserializeUser(User.deserializeUser());
 app.use(methodOverride('_method'));
 
 app.get('/',checkAuthentication, function(req,res){
-    var currentUser = req.user;
+    currentUser = req.user;
     res.render('index.ejs',{ user: currentUser });
 });
 
@@ -41,6 +44,10 @@ app.get('/login', checkNotAuthenticated, function(req,res){
 
 app.get('/register', checkNotAuthenticated, function(req,res){
     res.render('register.ejs');
+});
+
+app.get('/addItem', checkAuthentication, function(req, res){
+    res.render('items_add.ejs');
 });
 
 app.post('/login', checkNotAuthenticated, passport.authenticate('local', {
@@ -75,6 +82,18 @@ app.post('/register', [
             res.redirect('/login');
         });
       });
+});
+
+app.post('/addItem', checkAuthentication, function(req,res){
+    var itemAdd = item({
+        product: req.body.productName,
+        price: req.body.price,
+        category: req.body.productCategory,
+        stock: req.body.stock,
+        owner: currentUser.username
+    }).save();
+    console.log('Added successfully');
+    res.redirect('/');
 });
 
 app.delete('/logout', function(req, res)
