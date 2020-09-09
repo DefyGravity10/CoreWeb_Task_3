@@ -2,6 +2,9 @@
 <h2>This is a <%= user.userType %> account</h2>
 
 <% if(user.userType == "Seller") {%>
+<% items.forEach(function(item){ %>
+<li><%= item %></li>
+<% }); %>
 <%- include('partials/Seller.ejs'); -%>
 <% } %>
 

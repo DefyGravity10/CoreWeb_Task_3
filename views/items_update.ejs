@@ -1,0 +1,20 @@
+<h1>Update Item</h1>
+
+<form action="/updateItem" method="POST">
+    <li>Enter Product Credentials</li>
+    <label for="productName">Product Name:</label>
+    <input type="text" id="productName" name="productName" required>
+    <label for="productCategory">Product Category:</label>
+    <input type="text" id="productCategory" name="category" required>
+    <li>Enter Updated details</li>
+    <p>Enter the same value if not intended to be updated</p>
+    <label for="newProductName">Product Name:</label>
+    <input type="text" id="newProductName" name="newProductName" required>
+    <label for="newCategory">Product Category:</label>
+    <input type="text" id="newCategory" name="newCategory" required>
+    <label for="newQuantity">Product Quantity Available:</label>
+    <input type="text" id="newQuantity" name="newQuantity" required>
+    <label for="cost">Product Price:</label>
+    <input type="text" id="productCost" name="newCost" required>
+    <button type="submit">SUBMIT</button>
+</form>

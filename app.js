@@ -10,6 +10,10 @@ var passportLocalMongoose = require('passport-local-mongoose');
 const  {check, validationResult} = require('express-validator');
 
 mongoose.connect('mongodb+srv://DefyGravity10:Batsy@cluster0.zmrms.gcp.mongodb.net/Storage_01?retryWrites=true&w=majority', { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.set('useCreateIndex', true);
+mongoose.set('useFindAndModify', false);
+
+
 
 var User = require('./models/user');
 var item = require('./models/items');
@@ -33,9 +37,11 @@ passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 app.use(methodOverride('_method'));
 
-app.get('/',checkAuthentication, function(req,res){
+app.get('/',checkAuthentication, async function(req,res){
     currentUser = req.user;
-    res.render('index.ejs',{ user: currentUser });
+    var itemList = [];
+    itemList = await item.find({owner: currentUser.username});
+    res.render('index.ejs',{ user: currentUser, items: itemList });
 });
 
 app.get('/login', checkNotAuthenticated, function(req,res){
@@ -48,6 +54,10 @@ app.get('/register', checkNotAuthenticated, function(req,res){
 
 app.get('/addItem', checkAuthentication, function(req, res){
     res.render('items_add.ejs');
+});
+
+app.get('/updateItem', checkAuthentication, function(req, res){
+    res.render('items_update.ejs');
 });
 
 app.post('/login', checkNotAuthenticated, passport.authenticate('local', {
@@ -93,6 +103,13 @@ app.post('/addItem', checkAuthentication, function(req,res){
         owner: currentUser.username
     }).save();
     console.log('Added successfully');
+    res.redirect('/');
+});
+
+app.post('/updateItem', checkAuthentication, async function(req, res){
+    var updateItem = await item.findOneAndUpdate({product: req.body.productName, category: req.body.category}, {product: req.body.newProductName, category: req.body.newCategory, price: req.body.newCost, stock: req.body.newQuantity}, {returnOriginal:false});
+    console.log('updated successfully');
+    console.log(updateItem);
     res.redirect('/');
 });
 
