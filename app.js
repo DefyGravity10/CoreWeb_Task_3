@@ -16,12 +16,14 @@ mongoose.set('useFindAndModify', false);
 var User = require('./models/user');
 var item = require('./models/items');
 var Purchase = require('./models/purchase');
+const { transformAuthInfo } = require('passport');
 
 var app = express();
 var currentUser;
 var tempItem;
 var cart = [];
 var CODE = 0;
+var truth;
 
 app.set('view-engine','ejs');
 app.use(express.static(__dirname + '/public'));
@@ -74,6 +76,10 @@ app.get('/purchase', checkAuthentication, function(req, res){
 
 app.get('/purchase/confirm', checkAuthentication, function(req, res){
     res.render('purchase_confirm.ejs', {itemConfirmed: tempItem, quantityRequested: tempQuantity});
+});
+
+app.get('/cart', checkAuthentication, function(req, res){
+    res.render('cart.ejs', {cart: tempCart});
 });
 
 app.post('/login', checkNotAuthenticated, passport.authenticate('local', {
@@ -137,7 +143,6 @@ app.post('/updateItem', checkAuthentication, async function(req, res){
 });
 
 var tempQuantity, tempCode;
-var itemId;
 
 app.post('/purchase', checkAuthentication, async function(req, res){
     var checkStock;
@@ -179,10 +184,47 @@ app.post('/purchase/confirm', checkAuthentication, async function(req, res){
     res.redirect('/');
 });
 
+var tempCart = [];
+
 app.post('/purchase/cart', checkAuthentication, async function(req, res){
-    cart.push(tempCode);
-    var addToCart = await User.findOneAndUpdate({username: currentUser.username}, {cart: cart});
-    console.log(addToCart+''+itemId);
+    var cartList = [];
+    if(truthValue())
+    {
+        cart.push(tempCode);
+        var addToCart = await User.findOneAndUpdate({username: currentUser.username}, {cart: cart});
+    }
+    console.log(addToCart);
+    cart.forEach(async function(entry)
+    {
+        await item.findOne({code: entry}, function(err, obj){
+            cartList.push(obj);
+        });
+    });
+    tempCart = cartList;
+    res.redirect('/cart');
+});
+
+app.post('/cart', checkAuthentication, async function(req, res){
+    var cartList_2 = [];
+    for(var i=0;i<cart.length;i++)
+    {
+        if(cart[i]==req.body.code)
+        {
+            cart[i]=cart[i+1];
+            cart.pop();
+        }
+    }
+    console.log(cart);
+    var p = await User.findOneAndUpdate({username: currentUser.username},{cart: cart});
+    console.log(p);
+    cart.forEach(async function(entry)
+    {
+        await item.findOne({code: entry}, function(err, obj){
+            cartList_2.push(obj);
+        });
+    });
+    tempCart = cartList_2;
+    res.redirect('/cart');
 });
 
 app.delete('/logout', function(req, res)
@@ -207,6 +249,16 @@ function checkNotAuthenticated(req,res,next)
         return res.redirect('/');
     }
     next();
+}
+
+function truthValue()
+{
+    for(var i=0;i<cart.length;i++)
+    {
+        if(cart[i]==tempCode)
+            return false;
+    }
+    return true;
 }
 
 app.listen(3000);

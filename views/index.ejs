@@ -15,6 +15,9 @@
 <p>PRICE: <%= item.price %></p>
 <% }); %>
 <% }); %>
+<form action="/purchase/cart" method="POST">
+    <button type="submit">CART</button>
+</form>
 <%- include('partials/Buyer.ejs'); -%>
 <% } %>
 
