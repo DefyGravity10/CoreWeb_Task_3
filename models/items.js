@@ -19,6 +19,12 @@ var itemSchema = new mongoose.Schema({
     },
     owner: {
         type: String
+    },
+    code: {
+        type: Number
+    },
+    ownerEmail: {
+        type: String
     }
 });
 

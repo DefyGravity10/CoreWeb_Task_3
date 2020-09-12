@@ -19,12 +19,6 @@ var UserSchema = new mongoose.Schema({
     },
     cart: {
         type: Array
-    },
-    Recent_Purchase: {
-        type: Array
-    },
-    Products: {
-        type: Array
     }
 });
 

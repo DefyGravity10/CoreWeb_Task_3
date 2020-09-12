@@ -7,7 +7,19 @@
 <% }); %>
 <%- include('partials/Seller.ejs'); -%>
 <% } %>
+<% if(user.userType == "Buyer") {%>
+<% market.forEach(function(marketItem){ %>
+<% marketItem.forEach(function(item){ %>
+<p><strong>PRODUCT: <%=item.product %></strong></p>
+<p>CATEGORY: <%= item.category %></p>
+<p>PRICE: <%= item.price %></p>
+<% }); %>
+<% }); %>
+<%- include('partials/Buyer.ejs'); -%>
+<% } %>
 
 <form action="/logout?_method=DELETE" method="POST">
     <button type="submit">LOG OUT</button>
 </form>
+
+<link rel="stylesheet" href="dashboardStyle.css">

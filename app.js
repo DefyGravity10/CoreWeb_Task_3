@@ -13,16 +13,18 @@ mongoose.connect('mongodb+srv://DefyGravity10:Batsy@cluster0.zmrms.gcp.mongodb.n
 mongoose.set('useCreateIndex', true);
 mongoose.set('useFindAndModify', false);
 
-
-
 var User = require('./models/user');
 var item = require('./models/items');
+var Purchase = require('./models/purchase');
 
 var app = express();
 var currentUser;
-
+var tempItem;
+var cart = [];
+var CODE = 0;
 
 app.set('view-engine','ejs');
+app.use(express.static(__dirname + '/public'));
 app.use(express.urlencoded({extended: false}));
 app.use(flash());
 app.use(session({
@@ -39,9 +41,15 @@ app.use(methodOverride('_method'));
 
 app.get('/',checkAuthentication, async function(req,res){
     currentUser = req.user;
-    var itemList = [];
-    itemList = await item.find({owner: currentUser.username});
-    res.render('index.ejs',{ user: currentUser, items: itemList });
+    cart = currentUser.cart;
+    var itemList = [], itemsInMarket = [];
+    await item.find({owner: currentUser.username}, function(err, obj){
+        itemList.push(obj);
+    });
+    await item.find({}, function(err, obj2){
+        itemsInMarket.push(obj2);
+    });
+    res.render('index.ejs',{ user: currentUser, items: itemList, market: itemsInMarket });
 });
 
 app.get('/login', checkNotAuthenticated, function(req,res){
@@ -58,6 +66,14 @@ app.get('/addItem', checkAuthentication, function(req, res){
 
 app.get('/updateItem', checkAuthentication, function(req, res){
     res.render('items_update.ejs');
+});
+
+app.get('/purchase', checkAuthentication, function(req, res){
+    res.render('purchase.ejs');
+});
+
+app.get('/purchase/confirm', checkAuthentication, function(req, res){
+    res.render('purchase_confirm.ejs', {itemConfirmed: tempItem, quantityRequested: tempQuantity});
 });
 
 app.post('/login', checkNotAuthenticated, passport.authenticate('local', {
@@ -100,8 +116,15 @@ app.post('/addItem', checkAuthentication, function(req,res){
         price: req.body.price,
         category: req.body.productCategory,
         stock: req.body.stock,
-        owner: currentUser.username
-    }).save();
+        owner: currentUser.username,
+        ownerEmail: currentUser.email,
+        code: CODE
+    }).save(function(err){
+        if(err)
+            console.log(err);
+
+        CODE++;
+    });
     console.log('Added successfully');
     res.redirect('/');
 });
@@ -113,13 +136,61 @@ app.post('/updateItem', checkAuthentication, async function(req, res){
     res.redirect('/');
 });
 
+var tempQuantity, tempCode;
+var itemId;
+
+app.post('/purchase', checkAuthentication, async function(req, res){
+    var checkStock;
+    tempItem = await item.find({code: req.body.code}, function(err, obj){
+        checkStock = obj.stock;
+        itemId = obj.id;
+    });
+    tempCode = req.body.code;
+    tempQuantity = req.body.quantity;
+    if(checkStock==0 || checkStock-req.body.quantity<0)
+    {
+        res.send('Not Enough Stock Available');
+    }
+    else{
+        res.redirect('/purchase/confirm');
+    }
+});
+
+app.post('/purchase/confirm', checkAuthentication, async function(req, res){
+    var today = new Date();
+    var tempStock, tempSeller, tempSellerEmail;
+    tempItem = await item.findOne({code: tempCode},function(err, obj){
+        tempStock = obj.stock;
+        tempSeller = obj.owner;
+        tempSellerEmail = obj.ownerEmail;
+        console.log(obj);
+    });
+    var addPurchase = Purchase({
+        buyer: currentUser.username,
+        buyerEmail: currentUser.email,
+        sellerEmail: tempSellerEmail,
+        seller: tempSeller,
+        quantity: tempQuantity,
+        purchaseDate: today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate()
+    }).save();
+    var dif = tempStock - tempQuantity;
+    var updateQuantity = await item.findOneAndUpdate({code: tempCode}, {stock: dif});
+    console.log(tempSeller+''+tempStock);
+    res.redirect('/');
+});
+
+app.post('/purchase/cart', checkAuthentication, async function(req, res){
+    cart.push(tempCode);
+    var addToCart = await User.findOneAndUpdate({username: currentUser.username}, {cart: cart});
+    console.log(addToCart+''+itemId);
+});
+
 app.delete('/logout', function(req, res)
 {
     req.logOut();
     res.redirect('/login');
 });
   
-
 function checkAuthentication(req,res,next)
 {
     if(req.isAuthenticated())
