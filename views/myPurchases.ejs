@@ -1,1 +1,32 @@
-<%= list %>
+<h2>LIST OF PURCHASES</h2>
+
+<% var i=1; %>
+<% list.forEach(function(entry){ %>
+<% entry.forEach(function(item){ %>
+    <div>
+        <p><strong><%=i%></strong></p>
+        <% i++; %>
+        <p>Purchased Item: <%=item.product%></p>
+        <p>Purchased for: <%=item.cost%></p>
+        <p>Purchased Quantity: <%=item.quantity%></p>
+        <p>Purchased On: <%=item.purchaseDate%></p>
+        <p>Sold By: <%=item.seller%></p>
+        <p>Contact Seller: <%=item.sellerEmail %></p>
+    </div>
+<% }); %>
+<% }); %>
+
+<style>
+
+    html{
+        background-color: blanchedalmond;
+    }
+    h2{
+        padding-left: 90px;
+    }
+    div{
+        padding-left: 120px;
+        text-align: start;
+        font-size: larger;
+    }
+</style>

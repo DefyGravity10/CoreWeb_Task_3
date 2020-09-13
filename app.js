@@ -17,14 +17,12 @@ var User = require('./models/user');
 var item = require('./models/items');
 var Purchase = require('./models/purchase');
 const { transformAuthInfo } = require('passport');
-const purchase = require('./models/purchase');
 
 var app = express();
 var currentUser;
 var tempItem;
 var cart = [];
 var CODE = 0;
-var truth;
 
 app.set('view-engine','ejs');
 app.use(express.static(__dirname + '/public'));
@@ -80,6 +78,8 @@ app.get('/purchase/confirm', checkAuthentication, function(req, res){
 });
 
 app.get('/cart', checkAuthentication, function(req, res){
+    console.log(tempCart);
+    //tempCart.pop();
     res.render('cart.ejs', {cart: tempCart});
 });
 
@@ -192,11 +192,13 @@ app.post('/purchase', checkAuthentication, async function(req, res){
 
 app.post('/purchase/confirm', checkAuthentication, async function(req, res){
     var today = new Date();
-    var tempStock, tempSeller, tempSellerEmail;
+    var tempStock, tempSeller, tempSellerEmail, tempProduct, tempCost;
     tempItem = await item.findOne({code: tempCode},function(err, obj){
         tempStock = obj.stock;
         tempSeller = obj.owner;
         tempSellerEmail = obj.ownerEmail;
+        tempProduct = obj.product;
+        tempCost = obj.price;
         console.log(obj);
     });
     var addPurchase = Purchase({
@@ -205,6 +207,8 @@ app.post('/purchase/confirm', checkAuthentication, async function(req, res){
         sellerEmail: tempSellerEmail,
         seller: tempSeller,
         quantity: tempQuantity,
+        product: tempProduct,
+        cost: tempCost*tempQuantity,
         purchaseDate: today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate()
     }).save();
     var dif = tempStock - tempQuantity;

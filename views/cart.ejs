@@ -1,7 +1,40 @@
-<%= cart %>
+<html>
+<h2>CART</h2>
 
 <form action="/cart" method="POST">
     <label for='code'>Enter code of item to remove from CART</label>
     <input type="text" id="code" name="code">
     <button type="submit">CONFIRM</button>
 </form>
+
+<% var i=1; %>
+<% cart.forEach(function(item){ %>
+    <% if(item!=null){ %>
+    <div>
+        <p><strong><%=i%></strong></p>
+        <% i++; %>
+        <p>Item: <%=item.product%></p>
+        <p>Price: <%=item.price%></p>
+        <p>Purchased Quantity: <%=item.stock%></p>
+        <p>Sold By: <%=item.owner%></p>
+        <p>Contact Seller: <%=item.ownerEmail %></p>
+    </div>
+    <% } %>
+<% }); %>
+
+</html>
+
+<style>
+    html{
+        background-color: blanchedalmond;
+    }
+    h2{
+        padding-left: 100px;
+    }
+    div {
+        padding-left: 300px;
+    }
+    form{
+        padding-left: 100px;
+    }
+</style>

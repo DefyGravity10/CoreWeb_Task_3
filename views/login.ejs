@@ -4,24 +4,29 @@
         <link rel="stylesheet" href="loginStyle.css">
     </head>
     <body>
-        <h1>DIGISHOP</h1>
-<h1>USER LOGIN</h1>
-
-<% if(messages.error) { %>
-    <%= messages.error  %>
-<% } %>
+        <h1>DIGIMART ONLINE</h1>
+        <h2>WELCOME TO DIGIMART ONLINE!</h2>
+<h2 id="loginTitle">USER LOGIN</h2>
 
 <form action="/login" method="POST">
-    <div>
+    <div id="form">
+    <div class="field">
+        <i class="fa fa-user icon"></i>
         <label for="username">USERNAME</label>
         <input type="username" id="username" name="username" required>
     </div>
-    <div>
+    <div class="field">
+        <i class="fa fa-key icon"></i>
         <label for="password">PASSWORD</label>
         <input type="password" id="password" name="password" required>
     </div>
     <button type="submit">LOGIN</button>
+    </div>
+    <% if(messages.error) { %>
+    <p><%= messages.error  %></p>
+    <% } %>
 </form>
+
 <a href="/register">REGISTER</a>
     
     </body>

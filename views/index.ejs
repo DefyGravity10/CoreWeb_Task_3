@@ -1,28 +1,57 @@
-<h1>HI <%= user.username %> </h1>
-<h2>This is a <%= user.userType %> account</h2>
-
-<% if(user.userType == "Seller") {%>
-<% items.forEach(function(item){ %>
-<li><%= item %></li>
-<% }); %>
-<%- include('partials/Seller.ejs'); -%>
-<% } %>
-<% if(user.userType == "Buyer") {%>
-<% market.forEach(function(marketItem){ %>
-<% marketItem.forEach(function(item){ %>
-<p><strong>PRODUCT: <%=item.product %></strong></p>
-<p>CATEGORY: <%= item.category %></p>
-<p>PRICE: <%= item.price %></p>
-<% }); %>
-<% }); %>
-<form action="/purchase/cart" method="POST">
-    <button type="submit">CART</button>
-</form>
-<%- include('partials/Buyer.ejs'); -%>
-<% } %>
+<html>
+<h1>DIGIMART ONLINE</h1>
+<h2 id="user">HI <%= user.username %> </h2>
+<h2 id="account"><%= user.userType %> account</h2>
 
 <form action="/logout?_method=DELETE" method="POST">
     <button type="submit">LOG OUT</button>
 </form>
 
+<% var i=1; %>
+<% if(user.userType == "Seller") {%>
+    <%- include('partials/Seller.ejs'); -%>
+<% items.forEach(function(entry){ %>
+    <h2 style="text-align: center;">My PRODUCTS</h2>
+<% entry.forEach(function(item){ %>
+    <div id="product" style="padding-left: 750px;">
+        <div id="pDetails">
+            <p><%=i%>) <strong>PRODUCT: <%=item.product %></strong></p>
+            <p><strong>ITEM CODE: <%= item.code %></strong></p>
+            <p>CATEGORY: <%= item.category %></p>
+            <p>PRICE: <%= item.price %></p>
+            <p>QUANTITY AVAILABLE: <%= item.stock %></p>
+        </div>
+    </div>
+    <% i++; %>
+<% }); %>
+<% }); %>
+<% } %>
+<% if(user.userType == "Buyer") {%>
+    <form action="/purchase/cart" method="POST">
+        <button type="submit">CART</button>
+    </form>
+    <%- include('partials/Buyer.ejs'); -%>
+<% market.forEach(function(marketItem){ %>
+    <h2 style="text-align: center;">MARKET</h2>
+<% marketItem.forEach(function(item){ %>
+    <div id="product">
+        <div id="pDetails">
+            <p><%=i%>) <strong>PRODUCT: <%=item.product %></strong></p>
+            <p><strong>ITEM CODE: <%= item.code %></strong></p>
+            <p>CATEGORY: <%= item.category %></p>
+            <p>PRICE: <%= item.price %></p>
+            <p>QUANTITY AVAILABLE: <%= item.stock %></p>
+        </div>
+        <div id="sDetails">
+            <p>SELLER DETAILS</p>
+            <p>SOLD BY: <%= item.owner %></p>
+            <p>EMAIL: <%= item.ownerEmail %></p>
+        </div>
+    </div>
+    <% i++; %>
+<% }); %>
+<% }); %>
+<% } %>
+
 <link rel="stylesheet" href="dashboardStyle.css">
+</html>
