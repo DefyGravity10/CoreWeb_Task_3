@@ -8,7 +8,7 @@
 </form>
 
 <% var i=1; %>
-<% if(user.userType == "Seller") {%>
+<% if(user.userType == "Seller" || user.userType == "seller") {%>
     <%- include('partials/Seller.ejs'); -%>
 <% items.forEach(function(entry){ %>
     <h2 style="text-align: center;">My PRODUCTS</h2>
@@ -26,7 +26,7 @@
 <% }); %>
 <% }); %>
 <% } %>
-<% if(user.userType == "Buyer") {%>
+<% if(user.userType == "Buyer" || user.userType == "buyer") {%>
     <form action="/purchase/cart" method="POST">
         <button type="submit">CART</button>
     </form>
