@@ -1,4 +1,4 @@
-<h2>LIST OF PURCHASES</h2>
+<h2>LIST OF SALES</h2>
 
 <% var i=1; %>
 <% list.forEach(function(entry){ %>
@@ -10,8 +10,8 @@
         <p>Sold for: <%=item.cost%></p>
         <p>Sold Quantity: <%=item.quantity%></p>
         <p>Sold On: <%=item.purchaseDate%></p>
-        <p>Purchased By: <%=item.seller%></p>
-        <p>Contact Buyer: <%=item.sellerEmail %></p>
+        <p>Purchased By: <%=item.buyer%></p>
+        <p>Contact Buyer: <%=item.buyerEmail %></p>
     </div>
 <% }); %>
 <% }); %>

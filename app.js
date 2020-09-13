@@ -22,7 +22,7 @@ var app = express();
 var currentUser;
 var tempItem;
 var cart = [];
-var CODE = 0;
+var CODE, SCODE;
 
 app.set('view-engine','ejs');
 app.use(express.static(__dirname + '/public'));
@@ -153,12 +153,10 @@ app.post('/addItem', checkAuthentication, function(req,res){
         stock: req.body.stock,
         owner: currentUser.username,
         ownerEmail: currentUser.email,
-        code: CODE
+        code: generateRandom()
     }).save(function(err){
         if(err)
             console.log(err);
-
-        CODE++;
     });
     console.log('Added successfully');
     res.redirect('/');
@@ -208,7 +206,7 @@ app.post('/purchase/confirm', checkAuthentication, async function(req, res){
         seller: tempSeller,
         quantity: tempQuantity,
         product: tempProduct,
-        cost: tempCost*tempQuantity,
+        cost: tempCost,
         purchaseDate: today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate()
     }).save();
     var dif = tempStock - tempQuantity;
@@ -292,6 +290,14 @@ function truthValue()
             return false;
     }
     return true;
+}
+
+function generateRandom()
+{
+    CODE = Math.floor(Math.random()*10000);
+    SCODE = Math.floor(Math.random()*1000);
+
+    return Number(CODE+''+SCODE);
 }
 
 app.listen(3000);
