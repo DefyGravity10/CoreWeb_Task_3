@@ -17,6 +17,7 @@ var User = require('./models/user');
 var item = require('./models/items');
 var Purchase = require('./models/purchase');
 const { transformAuthInfo } = require('passport');
+const purchase = require('./models/purchase');
 
 var app = express();
 var currentUser;
@@ -45,10 +46,10 @@ app.get('/',checkAuthentication, async function(req,res){
     currentUser = req.user;
     cart = currentUser.cart;
     var itemList = [], itemsInMarket = [];
-    await item.find({owner: currentUser.username}, function(err, obj){
+    var cursor = await item.find({owner: currentUser.username}, function(err, obj){
         itemList.push(obj);
     });
-    await item.find({}, function(err, obj2){
+    var cursor2 = await item.find({}, function(err, obj2){
         itemsInMarket.push(obj2);
     });
     res.render('index.ejs',{ user: currentUser, items: itemList, market: itemsInMarket });
@@ -80,6 +81,34 @@ app.get('/purchase/confirm', checkAuthentication, function(req, res){
 
 app.get('/cart', checkAuthentication, function(req, res){
     res.render('cart.ejs', {cart: tempCart});
+});
+
+app.get('/myPurchases', checkAuthentication, function(req, res){
+    
+    res.render('myPurchases.ejs', {list: purchaseList});
+});
+
+app.get('/mySales', checkAuthentication, function(req, res){
+    res.render('mySales.ejs', {list: salesList});
+});
+
+var salesList = [], purchaseList =[];
+
+app.post('/mySales', checkAuthentication, async function(req, res){
+    salesList = [];
+    var cursor = await Purchase.find({seller: currentUser.username}, function(err, obj){
+        salesList.push(obj);
+    });
+    console.log(salesList);
+    res.redirect('/mySales');
+});
+
+app.post('/myPurchases', checkAuthentication, async function(req, res){
+    purchaseList = [];
+    var cursor = await Purchase.find({buyer: currentUser.username}, function(err, obj){
+        purchaseList.push(obj);
+    });
+    res.redirect('/myPurchases');
 });
 
 app.post('/login', checkNotAuthenticated, passport.authenticate('local', {
